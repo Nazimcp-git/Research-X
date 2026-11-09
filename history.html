@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Research History — ResearchX</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/dashboard.css">
+  <link rel="stylesheet" href="assets/css/report.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Firebase SDK v8.10.0 -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="brand-logo">
+          <div class="brand-icon-box">RX</div>
+          <span>ResearchX</span>
+        </a>
+        <span class="brand-tag">Academic</span>
+      </div>
+
+      <div class="sidebar-content">
+        <div class="nav-group">
+          <div class="nav-group-title">Platform</div>
+          <ul class="nav-list">
+            <li class="nav-item">
+              <a href="dashboard.html"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+            </li>
+            <li class="nav-item">
+              <a href="research.html"><i data-lucide="sparkles"></i> New Research</a>
+            </li>
+            <li class="nav-item active">
+              <a href="history.html"><i data-lucide="history"></i> Research History</a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">Configuration</div>
+          <ul class="nav-list">
+            <li class="nav-item">
+              <button type="button" class="btn-open-settings"><i data-lucide="key"></i> API Settings</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-pill">
+          <div class="user-avatar" id="user-avatar-initials">RX</div>
+          <div class="user-info">
+            <div class="user-name" id="user-display-name">Researcher</div>
+            <div class="user-email" id="user-display-email">loading...</div>
+          </div>
+          <button class="btn-subtle btn-sm btn-logout-action" title="Sign Out">
+            <i data-lucide="log-out"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="btn-subtle btn-sm" id="btn-sidebar-toggle" style="display: none;">
+            <i data-lucide="menu"></i>
+          </button>
+          <div class="page-title">Research Archive & History</div>
+        </div>
+        <div class="topbar-right">
+          <button class="btn btn-secondary btn-sm" id="btn-trigger-compare" disabled>
+            <i data-lucide="columns"></i> Compare Selected (0)
+          </button>
+          <a href="research.html" class="btn btn-primary btn-sm">
+            <i data-lucide="plus"></i> New Research
+          </a>
+        </div>
+      </header>
+
+      <div class="main-scroll-content">
+        <div style="max-width: 1100px; margin: 0 auto;">
+          
+          <div style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h1 style="font-size: 1.6rem; margin-bottom: 0.25rem;">Investigation Repository</h1>
+              <p class="text-sm text-secondary">Browse, search, and audit past multi-agent research dossiers stored in Firebase Realtime Database.</p>
+            </div>
+            
+            <!-- Search & Filters -->
+            <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;">
+              <input type="text" id="input-search-history" placeholder="Filter by keyword..." style="width: 240px; padding: 0.45rem 0.75rem; font-size: 0.85rem;">
+              
+              <select id="filter-status" style="padding: 0.45rem 0.75rem; font-size: 0.85rem;">
+                <option value="all">All Statuses</option>
+                <option value="completed">Completed Only</option>
+                <option value="in_progress">In Progress</option>
+                <option value="failed">Failed</option>
+              </select>
+
+              <select id="filter-depth" style="padding: 0.45rem 0.75rem; font-size: 0.85rem;">
+                <option value="all">All Depths</option>
+                <option value="Quick Research">Quick</option>
+                <option value="Standard Research">Standard</option>
+                <option value="Advanced Research">Advanced</option>
+                <option value="Deep Research">Deep</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- History Table -->
+          <div class="sessions-card">
+            <div class="table-responsive">
+              <table class="research-table">
+                <thead>
+                  <tr>
+                    <th style="width: 36px;">
+                      <input type="checkbox" id="check-all" title="Select all completed for comparison">
+                    </th>
+                    <th>Research Dossier</th>
+                    <th>Date</th>
+                    <th>Depth</th>
+                    <th>Sources</th>
+                    <th>Status</th>
+                    <th style="text-align: right;">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="history-tbody">
+                  <tr>
+                    <td colspan="7" style="padding: 3rem; text-align: center; color: var(--text-muted);">
+                      Loading archive...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+
+  </div>
+
+  <!-- Side-by-Side Research Comparison Modal -->
+  <div class="modal-backdrop" id="modal-comparison">
+    <div class="modal-window" style="max-width: 1050px;">
+      <div class="modal-header">
+        <div class="modal-title">Side-by-Side Research Comparison</div>
+        <button class="btn-subtle btn-sm" id="btn-close-comparison"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body" style="padding: 1.5rem;">
+        <div class="comparison-container">
+          
+          <!-- Column A -->
+          <div class="comparison-col" id="compare-col-a">
+            <!-- Rendered dynamically -->
+          </div>
+
+          <!-- Column B -->
+          <div class="comparison-col" id="compare-col-b">
+            <!-- Rendered dynamically -->
+          </div>
+
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary btn-sm" id="btn-done-comparison">Close Comparison</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Settings Modal Component -->
+  <div class="modal-backdrop" id="modal-api-settings">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title">API Configuration & Credentials</div>
+        <button class="btn-subtle btn-sm" id="btn-close-settings"><i data-lucide="x"></i></button>
+      </div>
+
+      <div class="modal-body">
+        <div style="background: var(--bg-secondary); border-left: 3px solid var(--accent-blue); padding: 0.75rem 1rem; border-radius: 0 var(--radius-md) var(--radius-md) 0; margin-bottom: 1.25rem; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.45;">
+          <strong>Security Notice:</strong> Keys are stored strictly in client-side memory for this browser session. They are never saved to Firebase, never printed in console logs, and never transmitted to external third parties.
+        </div>
+
+        <!-- Gemini API Key -->
+        <div class="form-group">
+          <label class="form-label" for="input-gemini-key">
+            <span>Gemini API Key <span class="required">*</span></span>
+            <span id="status-gemini"></span>
+          </label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="password" id="input-gemini-key" placeholder="AIzaSy..." style="flex: 1;">
+            <button class="btn btn-secondary btn-sm btn-toggle-key-mask" data-target="input-gemini-key" title="Toggle visibility">
+              <i data-lucide="eye"></i>
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btn-test-gemini">Test</button>
+          </div>
+          <span class="form-hint">Powers all 7 AI Agents. Get a free key at Google AI Studio.</span>
+        </div>
+
+        <!-- Gemini Model Selection -->
+        <div class="form-group">
+          <label class="form-label" for="select-gemini-model">Gemini Reasoning Model</label>
+          <select id="select-gemini-model">
+            <option value="gemini-flash-lite-latest" selected>Gemini Flash Lite (Fastest & Active - Recommended)</option>
+            <option value="gemini-3.5-flash">Gemini 3.5 Flash (High Precision & Active)</option>
+            <option value="gemini-3.8-flash">Gemini 3.8 Flash (High Demand)</option>
+            <option value="gemini-pro-latest">Gemini Pro Latest</option>
+          </select>
+        </div>
+
+        <!-- Tavily API Key -->
+        <div class="form-group">
+          <label class="form-label" for="input-tavily-key">
+            <span>Tavily Search API Key</span>
+            <span id="status-tavily"></span>
+          </label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="password" id="input-tavily-key" placeholder="tvly-..." style="flex: 1;">
+            <button class="btn btn-secondary btn-sm btn-toggle-key-mask" data-target="input-tavily-key" title="Toggle visibility">
+              <i data-lucide="eye"></i>
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btn-test-tavily">Test</button>
+          </div>
+          <span class="form-hint">Enables live real-time web crawling. Free tier available at tavily.com. (Wikipedia is used as baseline regardless).</span>
+        </div>
+
+        <!-- Jina Reader API Key -->
+        <div class="form-group">
+          <label class="form-label" for="input-jina-key">
+            <span>Jina Reader API Key (Optional)</span>
+            <span id="status-jina"></span>
+          </label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="password" id="input-jina-key" placeholder="jina_..." style="flex: 1;">
+            <button class="btn btn-secondary btn-sm btn-toggle-key-mask" data-target="input-jina-key" title="Toggle visibility">
+              <i data-lucide="eye"></i>
+            </button>
+            <button class="btn btn-secondary btn-sm" id="btn-test-jina">Test</button>
+          </div>
+          <span class="form-hint">High-rate token for r.jina.ai webpage extraction. Works without key for standard volume.</span>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-subtle btn-sm" id="btn-clear-settings">Clear Keys</button>
+        <button class="btn btn-primary btn-sm" id="btn-save-settings">Save to Session</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script type="module">
+    import { AuthService } from './assets/js/auth.js';
+    import { DatabaseService } from './assets/js/database.js';
+    import { App } from './assets/js/app.js';
+    import { formatDate, escapeHtml, showToast } from './assets/js/utils/helpers.js';
+
+    let currentUser = null;
+    let allSessions = [];
+    const selectedSessionIds = new Set();
+
+    AuthService.requireAuth().then(user => {
+      currentUser = user;
+      App.init();
+      loadHistory();
+      setupFilters();
+    });
+
+    async function loadHistory() {
+      try {
+        allSessions = await DatabaseService.getAllResearch(currentUser.uid);
+        applyFilters();
+      } catch (err) {
+        showToast(`Failed to load history: ${err.message}`, 'error');
+      }
+    }
+
+    function setupFilters() {
+      const searchInput = document.getElementById('input-search-history');
+      const statusSelect = document.getElementById('filter-status');
+      const depthSelect = document.getElementById('filter-depth');
+
+      searchInput.addEventListener('input', applyFilters);
+      statusSelect.addEventListener('change', applyFilters);
+      depthSelect.addEventListener('change', applyFilters);
+
+      // Trigger compare button
+      document.getElementById('btn-trigger-compare').addEventListener('click', openComparisonModal);
+      document.getElementById('btn-close-comparison').addEventListener('click', () => {
+        document.getElementById('modal-comparison').classList.remove('open');
+      });
+      document.getElementById('btn-done-comparison').addEventListener('click', () => {
+        document.getElementById('modal-comparison').classList.remove('open');
+      });
+    }
+
+    function applyFilters() {
+      const search = document.getElementById('input-search-history').value.toLowerCase().trim();
+      const status = document.getElementById('filter-status').value;
+      const depth = document.getElementById('filter-depth').value;
+
+      const filtered = allSessions.filter(s => {
+        const matchesSearch = !search ||
+          (s.topic && s.topic.toLowerCase().includes(search)) ||
+          (s.description && s.description.toLowerCase().includes(search));
+
+        const matchesStatus = status === 'all' || s.status === status;
+        const matchesDepth = depth === 'all' || s.depth === depth;
+
+        return matchesSearch && matchesStatus && matchesDepth;
+      });
+
+      renderHistoryTable(filtered);
+    }
+
+    function renderHistoryTable(sessions) {
+      const tbody = document.getElementById('history-tbody');
+      if (!tbody) return;
+
+      if (sessions.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7">
+              <div class="empty-state">
+                <i data-lucide="archive" class="empty-icon"></i>
+                <h3>No Research Sessions Found</h3>
+                <p>No investigations match the current filter criteria.</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        App.renderIcons();
+        return;
+      }
+
+      tbody.innerHTML = sessions.map(session => {
+        const statusBadge = session.status === 'completed'
+          ? '<span class="badge badge-success"><span class="status-dot"></span> Completed</span>'
+          : session.status === 'in_progress'
+          ? '<span class="badge badge-active"><span class="status-dot pulse"></span> In Progress</span>'
+          : '<span class="badge badge-error"><span class="status-dot"></span> Failed</span>';
+
+        const viewLink = session.status === 'completed'
+          ? `<a href="report.html?id=${session.id}" class="btn btn-secondary btn-sm">Report</a>`
+          : `<a href="research.html?id=${session.id}" class="btn btn-secondary btn-sm">Workspace</a>`;
+
+        const isChecked = selectedSessionIds.has(session.id);
+        const checkboxDisabled = session.status !== 'completed' ? 'disabled' : '';
+
+        return `
+          <tr>
+            <td>
+              <input type="checkbox" class="session-checkbox" data-id="${session.id}" ${isChecked ? 'checked' : ''} ${checkboxDisabled}>
+            </td>
+            <td class="session-topic-cell">
+              <a href="${session.status === 'completed' ? `report.html?id=${session.id}` : `research.html?id=${session.id}`}" class="session-title-link">
+                ${escapeHtml(session.topic)}
+              </a>
+              <div class="session-desc">${escapeHtml(session.description || 'No description')}</div>
+            </td>
+            <td>${formatDate(session.createdAt)}</td>
+            <td><span class="badge badge-idle">${escapeHtml(session.depth || 'Standard')}</span></td>
+            <td>${session.sources?.length || 0}</td>
+            <td>${statusBadge}</td>
+            <td style="text-align: right;">
+              <div style="display: inline-flex; gap: 0.4rem;">
+                ${viewLink}
+                <button class="btn btn-danger btn-sm btn-delete-session" data-id="${session.id}" title="Delete research session">
+                  <i data-lucide="trash-2"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      App.renderIcons();
+      bindTableActions();
+    }
+
+    function bindTableActions() {
+      // Checkboxes for comparison selection
+      const checkboxes = document.querySelectorAll('.session-checkbox');
+      const compareBtn = document.getElementById('btn-trigger-compare');
+
+      checkboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+          const id = cb.getAttribute('data-id');
+          if (cb.checked) {
+            if (selectedSessionIds.size >= 2) {
+              cb.checked = false;
+              showToast('You can compare a maximum of 2 sessions side-by-side.', 'warning');
+              return;
+            }
+            selectedSessionIds.add(id);
+          } else {
+            selectedSessionIds.delete(id);
+          }
+
+          compareBtn.disabled = selectedSessionIds.size !== 2;
+          compareBtn.innerHTML = `<i data-lucide="columns"></i> Compare Selected (${selectedSessionIds.size})`;
+          App.renderIcons();
+        });
+      });
+
+      // Delete buttons
+      document.querySelectorAll('.btn-delete-session').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.getAttribute('data-id');
+          if (confirm('Permanently delete this research dossier and all its artifacts from Firebase?')) {
+            try {
+              await DatabaseService.deleteResearch(currentUser.uid, id);
+              selectedSessionIds.delete(id);
+              showToast('Research session deleted.', 'info');
+              loadHistory();
+            } catch (err) {
+              showToast(`Failed to delete: ${err.message}`, 'error');
+            }
+          }
+        });
+      });
+    }
+
+    function openComparisonModal() {
+      const ids = Array.from(selectedSessionIds);
+      if (ids.length !== 2) return;
+
+      const sessionA = allSessions.find(s => s.id === ids[0]);
+      const sessionB = allSessions.find(s => s.id === ids[1]);
+
+      if (!sessionA || !sessionB) return;
+
+      renderComparisonCol(sessionA, 'compare-col-a');
+      renderComparisonCol(sessionB, 'compare-col-b');
+
+      document.getElementById('modal-comparison').classList.add('open');
+      App.renderIcons();
+    }
+
+    function renderComparisonCol(session, colId) {
+      const col = document.getElementById(colId);
+      if (!col) return;
+
+      const findings = session.findings?.key_findings || [];
+      const stats = session.findings?.patterns || [];
+      const conclusions = session.findings?.conclusions || [];
+      const sourcesCount = session.sources?.length || 0;
+
+      col.innerHTML = `
+        <div style="border-bottom: 2px solid var(--accent-primary); padding-bottom: 0.75rem; margin-bottom: 0.75rem;">
+          <span class="badge badge-purple" style="margin-bottom: 0.35rem;">${escapeHtml(session.depth || 'Standard')}</span>
+          <h3 style="font-size: 1.15rem; font-weight: 700;">${escapeHtml(session.topic)}</h3>
+          <div class="text-xs text-muted">Created: ${formatDate(session.createdAt)} &bull; ${sourcesCount} Sources</div>
+        </div>
+
+        <div>
+          <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.35rem;">Key Findings</h4>
+          <ul style="padding-left: 1.25rem; font-size: 0.825rem; color: var(--text-secondary); line-height: 1.45;">
+            ${findings.slice(0, 4).map(f => `<li>${escapeHtml(f)}</li>`).join('') || '<li>No explicit findings recorded.</li>'}
+          </ul>
+        </div>
+
+        <div>
+          <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.35rem;">Patterns & Trends</h4>
+          <ul style="padding-left: 1.25rem; font-size: 0.825rem; color: var(--text-secondary); line-height: 1.45;">
+            ${stats.slice(0, 3).map(p => `<li>${escapeHtml(p)}</li>`).join('') || '<li>Standard trend projection.</li>'}
+          </ul>
+        </div>
+
+        <div>
+          <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.35rem;">Conclusions</h4>
+          <p style="font-size: 0.825rem; color: var(--text-primary); line-height: 1.5; background: var(--bg-secondary); padding: 0.75rem; border-radius: var(--radius-md);">
+            ${escapeHtml(conclusions[0] || 'Investigation completed with empirical backing.')}
+          </p>
+        </div>
+
+        <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border-subtle);">
+          <a href="report.html?id=${session.id}" class="btn btn-secondary btn-sm" style="width: 100%;">
+            Open Full Dossier <i data-lucide="arrow-right"></i>
+          </a>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
+

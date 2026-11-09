@@ -1,0 +1,19 @@
+{
+  "rules": {
+    "users": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        "profile": {
+          ".validate": "newData.hasChildren(['email', 'createdAt'])"
+        },
+        "research": {
+          "$researchId": {
+            ".validate": "newData.hasChildren(['topic', 'status'])"
+          }
+        }
+      }
+    }
+  }
+}
+

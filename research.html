@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Research Workspace — ResearchX</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="stylesheet" href="assets/css/research.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Firebase SDK v8.10.0 -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+</head>
+<body>
+  <div class="app-container">
+    
+    <!-- Sidebar -->
+    <aside class="app-sidebar">
+      <div class="sidebar-header">
+        <a href="dashboard.html" class="brand-logo">
+          <div class="brand-icon-box">RX</div>
+          <span>ResearchX</span>
+        </a>
+        <span class="brand-tag">Academic</span>
+      </div>
+
+      <div class="sidebar-content">
+        <div class="nav-group">
+          <div class="nav-group-title">Platform</div>
+          <ul class="nav-list">
+            <li class="nav-item">
+              <a href="dashboard.html"><i data-lucide="layout-dashboard"></i> Dashboard</a>
+            </li>
+            <li class="nav-item active">
+              <a href="research.html"><i data-lucide="sparkles"></i> New Research</a>
+            </li>
+            <li class="nav-item">
+              <a href="history.html"><i data-lucide="history"></i> Research History</a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="nav-group">
+          <div class="nav-group-title">Configuration</div>
+          <ul class="nav-list">
+            <li class="nav-item">
+              <button type="button" class="btn-open-settings"><i data-lucide="key"></i> API Settings</button>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-pill">
+          <div class="user-avatar" id="user-avatar-initials">RX</div>
+          <div class="user-info">
+            <div class="user-name" id="user-display-name">Researcher</div>
+            <div class="user-email" id="user-display-email">loading...</div>
+          </div>
+          <button class="btn-subtle btn-sm btn-logout-action" title="Sign Out">
+            <i data-lucide="log-out"></i>
+          </button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace Container -->
+    <main class="app-main">
+      
+      <!-- Topbar -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button class="btn-subtle btn-sm" id="btn-sidebar-toggle" style="display: none;">
+            <i data-lucide="menu"></i>
+          </button>
+          <div class="page-title" id="page-title-heading">New Research Setup</div>
+        </div>
+        <div class="topbar-right">
+          <button class="btn btn-secondary btn-sm btn-open-settings">
+            <i data-lucide="settings"></i> API Config
+          </button>
+        </div>
+      </header>
+
+      <!-- View 1: New Research Setup Form -->
+      <div id="view-setup-form" class="main-scroll-content">
+        <div style="max-width: 820px; margin: 0 auto;">
+          
+          <div style="margin-bottom: 2rem;">
+            <h1 style="font-size: 1.75rem; margin-bottom: 0.35rem;">Initiate Autonomous Research</h1>
+            <p>Define your research question, investigative scope, and depth. Seven specialized AI agents will deploy to retrieve sources, verify claims, and compile an academic monograph.</p>
+          </div>
+
+          <form id="form-new-research" class="card" style="padding: 2rem;">
+            
+            <!-- Research Topic -->
+            <div class="form-group">
+              <label class="form-label" for="input-topic">
+                <span>Research Topic / Core Question <span class="required">*</span></span>
+              </label>
+              <input type="text" id="input-topic" required placeholder="e.g. Impact of Quantum Computing on Post-Quantum Cryptography" style="font-size: 1rem; padding: 0.75rem 1rem;">
+              <span class="form-hint">State the subject, scientific hypothesis, or inquiry question clearly.</span>
+            </div>
+
+            <!-- Description / Scope -->
+            <div class="form-group">
+              <label class="form-label" for="input-description">Detailed Scope & Objectives (Optional)</label>
+              <textarea id="input-description" rows="3" placeholder="Provide background constraints, specific algorithms, empirical benchmarks, or subdomains to emphasize..."></textarea>
+            </div>
+
+            <!-- Research Depth Selection -->
+            <div class="form-group">
+              <label class="form-label">Research Depth</label>
+              <div class="pill-selector">
+                <label class="pill-option">
+                  <input type="radio" name="research-depth" value="Quick Research">
+                  <span class="pill-label">⚡ Quick Research (Rapid overview)</span>
+                </label>
+                <label class="pill-option">
+                  <input type="radio" name="research-depth" value="Standard Research" checked>
+                  <span class="pill-label">📄 Standard Research (Balanced)</span>
+                </label>
+                <label class="pill-option">
+                  <input type="radio" name="research-depth" value="Advanced Research">
+                  <span class="pill-label">🔬 Advanced Research (Deeper inquiry)</span>
+                </label>
+                <label class="pill-option">
+                  <input type="radio" name="research-depth" value="Deep Research">
+                  <span class="pill-label">📚 Deep Research (Exhaustive & Red-teamed)</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Target Word Count Selection -->
+            <div class="form-group">
+              <label class="form-label" for="select-word-count">
+                <span>Target Monograph Length</span>
+                <span class="text-xs text-muted" id="word-count-badge">~1,500 words</span>
+              </label>
+              <div class="pill-selector">
+                <label class="pill-option">
+                  <input type="radio" name="target-words" value="800">
+                  <span class="pill-label">⚡ Concise (~800 words)</span>
+                </label>
+                <label class="pill-option">
+                  <input type="radio" name="target-words" value="1500" checked>
+                  <span class="pill-label">📄 Standard (~1,500 words)</span>
+                </label>
+                <label class="pill-option">
+                  <input type="radio" name="target-words" value="2500">
+                  <span class="pill-label">📖 In-Depth (~2,500 words)</span>
+                </label>
+                <label class="pill-option">
+                  <input type="radio" name="target-words" value="4000">
+                  <span class="pill-label">📚 Comprehensive (~4,000+ words)</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Humanizing & Tone Control -->
+            <div class="card" style="padding: 1.15rem; background: var(--bg-subtle); border: 1px solid var(--border-default); margin-bottom: 1.25rem;">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-weight: 600; font-size: 0.9rem;">
+                  <input type="checkbox" id="check-humanize" checked style="width: 16px; height: 16px; cursor: pointer;">
+                  <span>Humanize AI Prose (Anti-Robotic Filter)</span>
+                </label>
+                <span class="badge badge-success" style="font-size: 0.68rem;">Active Voice & Varied Syntax</span>
+              </div>
+              <p class="text-xs text-secondary" style="margin-bottom: 0.85rem; line-height: 1.45;">
+                Scans and removes formulaic AI transition clichés (e.g. <em>"delve", "tapestry", "beacon", "testament", "it is important to note"</em>), varies sentence rhythm, and enforces authentic human scholarly cadence.
+              </p>
+              <div class="form-row" style="margin-bottom: 0;">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label class="form-label" for="select-humanize-style" style="font-size: 0.78rem;">Humanizing Style Voice</label>
+                  <select id="select-humanize-style" style="font-size: 0.825rem; padding: 0.45rem 0.65rem;">
+                    <option value="natural_academic" selected>Natural Academic (Intellectual inquiry, varied sentence lengths)</option>
+                    <option value="executive">Executive Direct (Active voice, concise, zero fluff)</option>
+                    <option value="peer_reviewed">Peer-Reviewed Scientific (Formal, measured, rigorous)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- Language and Max Sources Grid -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="select-language">Preferred Language</label>
+                <select id="select-language">
+                  <option value="English" selected>English</option>
+                  <option value="Malayalam">Malayalam (മലയാളം)</option>
+                  <option value="Arabic">Arabic (العربية)</option>
+                  <option value="Hindi">Hindi (हिन्दी)</option>
+                  <option value="Spanish">Spanish (Español)</option>
+                  <option value="French">French (Français)</option>
+                  <option value="German">German (Deutsch)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="select-report-format">Report Format</label>
+                <select id="select-report-format">
+                  <option value="Academic Report" selected>Academic Report (12 sections with citations)</option>
+                  <option value="Professional Report">Professional SaaS Intelligence Report</option>
+                  <option value="Detailed Research">Detailed Research Paper</option>
+                  <option value="Executive Summary">Executive Briefing Document</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Additional Instructions -->
+            <div class="form-group">
+              <label class="form-label" for="input-instructions">Custom Directives / Exclusions (Optional)</label>
+              <input type="text" id="input-instructions" placeholder="e.g. Focus on peer-reviewed metrics since 2024; prioritize open-source benchmarks.">
+            </div>
+
+            <!-- Submit Action -->
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-subtle);">
+              <div class="text-xs text-muted" style="display: flex; align-items: center; gap: 0.4rem;">
+                <i data-lucide="info" style="width:14px;height:14px;"></i>
+                Requires valid Gemini API key configured in session memory.
+              </div>
+              <button type="submit" class="btn btn-primary btn-lg" id="btn-start-research">
+                <i data-lucide="sparkles"></i> Deploy Agent Swarm
+              </button>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+      <!-- View 2: Live Multi-Agent Workspace (Hidden initially) -->
+      <div id="view-live-workspace" style="display: none; height: 100%; flex-direction: column;">
+        
+        <!-- Workspace Header Banner -->
+        <div class="workspace-header">
+          <div class="workspace-title-box">
+            <h1 id="live-topic-display">Research Topic</h1>
+            <div class="workspace-meta">
+              <span class="badge badge-active" id="live-stage-badge">Planning</span>
+              <span id="live-meta-depth">Standard</span> &bull;
+              <span id="live-meta-lang">English</span> &bull;
+              <span id="live-meta-tokens">0 tokens</span>
+            </div>
+          </div>
+
+          <div class="workspace-controls">
+            <button class="btn btn-danger btn-sm" id="btn-stop-research">
+              <i data-lucide="square"></i> Stop
+            </button>
+            <a href="#" class="btn btn-primary btn-sm" id="btn-view-final-report" style="display: none;">
+              <i data-lucide="external-link"></i> View Full Report
+            </a>
+          </div>
+        </div>
+
+        <!-- 3-Column Workspace Grid -->
+        <div class="workspace-grid">
+          
+          <!-- Column 1: Research Plan & Progress -->
+          <div class="workspace-col">
+            <div class="col-header">
+              <h2><i data-lucide="list-checks" style="width:16px;height:16px;"></i> Research Plan</h2>
+              <span class="font-mono text-xs font-semibold" id="progress-percentage-label">0%</span>
+            </div>
+            
+            <div class="col-body">
+              <!-- Progress Bar -->
+              <div class="progress-bar-container">
+                <div class="progress-bar-fill" id="progress-bar-fill" style="width: 5%;"></div>
+              </div>
+
+              <!-- Stage Checklist -->
+              <div class="stage-tracker">
+                <div class="stage-step" id="stage-step-1">
+                  <div class="step-num-icon">1</div>
+                  <div class="step-info">
+                    <div class="step-title">Orchestration</div>
+                    <div class="step-desc">Decompose topic & assign tasks</div>
+                  </div>
+                </div>
+
+                <div class="stage-step" id="stage-step-2">
+                  <div class="step-num-icon">2</div>
+                  <div class="step-info">
+                    <div class="step-title">Evidence Gathering</div>
+                    <div class="step-desc">Parallel web & encyclopedia searches</div>
+                  </div>
+                </div>
+
+                <div class="stage-step" id="stage-step-3">
+                  <div class="step-num-icon">3</div>
+                  <div class="step-info">
+                    <div class="step-title">Pattern Analysis</div>
+                    <div class="step-desc">Synthesize findings & trade-offs</div>
+                  </div>
+                </div>
+
+                <div class="stage-step" id="stage-step-4">
+                  <div class="step-num-icon">4</div>
+                  <div class="step-info">
+                    <div class="step-title">Fact-Check Audit</div>
+                    <div class="step-desc">Verify claims against raw sources</div>
+                  </div>
+                </div>
+
+                <div class="stage-step" id="stage-step-5">
+                  <div class="step-num-icon">5</div>
+                  <div class="step-info">
+                    <div class="step-title">Adversarial Debate</div>
+                    <div class="step-desc">Red-team & counterarguments</div>
+                  </div>
+                </div>
+
+                <div class="stage-step" id="stage-step-6">
+                  <div class="step-num-icon">6</div>
+                  <div class="step-info">
+                    <div class="step-title">Report Composition</div>
+                    <div class="step-desc">Draft 12-section monograph</div>
+                  </div>
+                </div>
+
+                <div class="stage-step" id="stage-step-7">
+                  <div class="step-num-icon">7</div>
+                  <div class="step-info">
+                    <div class="step-title">Editorial QA</div>
+                    <div class="step-desc">Audit citations & certify publication</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Research Questions -->
+              <div style="margin-top: 1rem;">
+                <h3 style="font-size: 0.85rem; font-weight: 600; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted);">
+                  Subquestions
+                </h3>
+                <ul class="plan-checklist" id="plan-questions-list">
+                  <li class="plan-item text-muted">Awaiting orchestrator output...</li>
+                </ul>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Column 2: 7 Specialized AI Agents -->
+          <div class="workspace-col" style="flex: 1;">
+            <div class="col-header">
+              <h2><i data-lucide="cpu" style="width:16px;height:16px;"></i> Active Agent Swarm (7)</h2>
+              <span class="text-xs text-muted">Live Coordination</span>
+            </div>
+
+            <div class="col-body agent-grid" id="agent-cards-container">
+              <!-- Dynamically rendered via AgentManager -->
+            </div>
+          </div>
+
+          <!-- Column 3: Live Sources & Activity Logs -->
+          <div class="workspace-col">
+            <div class="tab-headers-subtle">
+              <button class="tab-btn-subtle active" id="tab-sources-btn">
+                Sources (<span id="source-count-badge">0</span>)
+              </button>
+              <button class="tab-btn-subtle" id="tab-logs-btn">
+                Activity Log
+              </button>
+            </div>
+
+            <!-- Tab Pane: Sources -->
+            <div class="col-body" id="pane-sources" style="gap: 0.75rem;">
+              <div id="sources-stream-list" style="display: flex; flex-direction: column; gap: 0.65rem;">
+                <div class="empty-state" style="padding: 2rem 1rem;">
+                  <i data-lucide="globe" class="empty-icon" style="width:32px;height:32px;"></i>
+                  <p class="text-sm text-muted">Sources gathered by the Researcher Agent will appear here in real time.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab Pane: Logs (Hidden by default) -->
+            <div class="col-body" id="pane-logs" style="display: none;">
+              <div class="log-stream" id="logs-stream-container">
+                <!-- Log entries -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </div>
+
+  <!-- Inspect Agent JSON Output Modal -->
+  <div class="modal-backdrop" id="modal-agent-output">
+    <div class="modal-window" style="max-width: 780px;">
+      <div class="modal-header">
+        <div class="modal-title" id="output-modal-title">Agent Structured Output</div>
+        <button class="btn-subtle btn-sm" id="btn-close-output"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <pre id="output-modal-json" style="background: var(--bg-secondary); padding: 1.25rem; border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 0.8rem; overflow-x: auto; white-space: pre-wrap; color: var(--text-primary); border: 1px solid var(--border-subtle);"></pre>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary btn-sm" id="btn-copy-agent-json">
+          <i data-lucide="copy"></i> Copy JSON
+        </button>
+        <button class="btn btn-primary btn-sm" id="btn-done-output">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- API Settings Modal Component -->
+  <div class="modal-backdrop" id="modal-api-settings">
+    <div class="modal-window">
+      <div class="modal-header">
+        <div class="modal-title">API Configuration</div>
+        <button class="btn-subtle btn-sm" id="btn-close-settings"><i data-lucide="x"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="input-gemini-key">Gemini API Key <span class="required">*</span></label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="password" id="input-gemini-key" placeholder="AIzaSy..." style="flex: 1;">
+            <button class="btn btn-secondary btn-sm btn-toggle-key-mask" data-target="input-gemini-key"><i data-lucide="eye"></i></button>
+            <button class="btn btn-secondary btn-sm" id="btn-test-gemini">Test</button>
+          </div>
+          <span class="form-hint" id="status-gemini"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="select-gemini-model">Gemini Model</label>
+          <select id="select-gemini-model">
+            <option value="gemini-flash-lite-latest" selected>Gemini Flash Lite (Fastest & Active - Recommended)</option>
+            <option value="gemini-3.5-flash">Gemini 3.5 Flash (High Precision & Active)</option>
+            <option value="gemini-3.8-flash">Gemini 3.8 Flash (High Demand)</option>
+            <option value="gemini-pro-latest">Gemini Pro Latest</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="input-tavily-key">Tavily Search Key (Optional)</label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="password" id="input-tavily-key" placeholder="tvly-..." style="flex: 1;">
+            <button class="btn btn-secondary btn-sm btn-toggle-key-mask" data-target="input-tavily-key"><i data-lucide="eye"></i></button>
+            <button class="btn btn-secondary btn-sm" id="btn-test-tavily">Test</button>
+          </div>
+          <span class="form-hint" id="status-tavily"></span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="input-jina-key">Jina Reader Key (Optional)</label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="password" id="input-jina-key" placeholder="jina_..." style="flex: 1;">
+            <button class="btn btn-secondary btn-sm btn-toggle-key-mask" data-target="input-jina-key"><i data-lucide="eye"></i></button>
+            <button class="btn btn-secondary btn-sm" id="btn-test-jina">Test</button>
+          </div>
+          <span class="form-hint" id="status-jina"></span>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-subtle btn-sm" id="btn-clear-settings">Clear Keys</button>
+        <button class="btn btn-primary btn-sm" id="btn-save-settings">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script type="module">
+    import { AuthService } from './assets/js/auth.js';
+    import { DatabaseService } from './assets/js/database.js';
+    import { App } from './assets/js/app.js';
+    import { AgentManager } from './assets/js/core/agent-manager.js';
+    import { ResearchEngine } from './assets/js/core/research-engine.js';
+    import { generateId, keyStore, showToast, escapeHtml, formatDuration, formatTokens } from './assets/js/utils/helpers.js';
+
+    let currentUser = null;
+    let agentManager = null;
+    let engine = null;
+    let activeResearchId = null;
+
+    AuthService.requireAuth().then(user => {
+      currentUser = user;
+      App.init();
+      setupWorkspace();
+      checkUrlParams();
+    });
+
+    function setupWorkspace() {
+      agentManager = new AgentManager();
+      engine = new ResearchEngine(agentManager);
+
+      // Render agent cards initially
+      renderAgentCards(agentManager.getAll());
+
+      // Subscribe to agent updates
+      agentManager.subscribe((id, agent, allAgents) => {
+        renderAgentCards(allAgents);
+        if (id === 'orchestrator' && agent.output?.research_questions) {
+          const qList = document.getElementById('plan-questions-list');
+          if (qList) {
+            qList.innerHTML = agent.output.research_questions.map(q => `
+              <li class="plan-item">
+                <i data-lucide="check-circle-2" style="width:14px;height:14px;flex-shrink:0;margin-top:2px;color:var(--accent-blue);"></i>
+                <span>${escapeHtml(q)}</span>
+              </li>
+            `).join('');
+            App.renderIcons();
+          }
+        }
+      });
+
+      // Bind Engine Callbacks
+      engine.setCallbacks({
+        onProgress: ({ stage, progress, tokensUsed }) => {
+          document.getElementById('live-stage-badge').textContent = stage;
+          document.getElementById('progress-percentage-label').textContent = `${Math.round(progress)}%`;
+          document.getElementById('progress-bar-fill').style.width = `${progress}%`;
+          document.getElementById('live-meta-tokens').textContent = `${formatTokens(tokensUsed)} tokens`;
+          highlightStageStep(progress);
+        },
+        onLog: (entry) => {
+          appendLogEntry(entry);
+        },
+        onSourceAdded: (source) => {
+          renderSourceItem(source);
+        },
+        onComplete: (finalRecord) => {
+          showToast('Research successfully completed & verified!', 'success');
+          const viewBtn = document.getElementById('btn-view-final-report');
+          if (viewBtn) {
+            viewBtn.href = `report.html?id=${finalRecord.id}`;
+            viewBtn.style.display = 'inline-flex';
+          }
+        },
+        onError: (err) => {
+          showToast(`Research halted: ${err.message}`, 'error', 7000);
+        }
+      });
+
+      // Bind Tab switching in Right Column (Sources vs Logs)
+      const tabSourcesBtn = document.getElementById('tab-sources-btn');
+      const tabLogsBtn = document.getElementById('tab-logs-btn');
+      const paneSources = document.getElementById('pane-sources');
+      const paneLogs = document.getElementById('pane-logs');
+
+      tabSourcesBtn.addEventListener('click', () => {
+        tabSourcesBtn.classList.add('active');
+        tabLogsBtn.classList.remove('active');
+        paneSources.style.display = 'flex';
+        paneLogs.style.display = 'none';
+      });
+
+      tabLogsBtn.addEventListener('click', () => {
+        tabLogsBtn.classList.add('active');
+        tabSourcesBtn.classList.remove('active');
+        paneSources.style.display = 'none';
+        paneLogs.style.display = 'flex';
+      });
+
+      // Form submission handler
+      document.getElementById('form-new-research').addEventListener('submit', handleFormSubmit);
+
+      // Stop button
+      document.getElementById('btn-stop-research').addEventListener('click', () => {
+        if (confirm('Are you sure you want to halt the research process? Intermediate work is preserved.')) {
+          engine.stop();
+        }
+      });
+
+      // Modal Output inspection close handlers
+      const modalOutput = document.getElementById('modal-agent-output');
+      document.getElementById('btn-close-output').addEventListener('click', () => modalOutput.classList.remove('open'));
+      document.getElementById('btn-done-output').addEventListener('click', () => modalOutput.classList.remove('open'));
+      document.getElementById('btn-copy-agent-json').addEventListener('click', () => {
+        const text = document.getElementById('output-modal-json').textContent;
+        navigator.clipboard.writeText(text);
+        showToast('Agent JSON copied to clipboard.', 'info');
+      });
+    }
+
+    function checkUrlParams() {
+      // Check prefilled data from Dashboard Quick Starters
+      const prefillTopic = sessionStorage.getItem('rx_prefill_topic');
+      const prefillDepth = sessionStorage.getItem('rx_prefill_depth');
+      const prefillFormat = sessionStorage.getItem('rx_prefill_format');
+
+      if (prefillTopic) {
+        document.getElementById('input-topic').value = prefillTopic;
+        if (prefillDepth) {
+          const depthRadio = document.querySelector(`input[name="research-depth"][value="${prefillDepth}"]`);
+          if (depthRadio) depthRadio.checked = true;
+        }
+        if (prefillFormat) {
+          document.getElementById('select-report-format').value = prefillFormat;
+        }
+        sessionStorage.removeItem('rx_prefill_topic');
+        sessionStorage.removeItem('rx_prefill_depth');
+        sessionStorage.removeItem('rx_prefill_format');
+      }
+
+      // Check if resuming an existing research id: ?id=...
+      const urlParams = new URLSearchParams(window.location.search);
+      const resId = urlParams.get('id');
+      if (resId && currentUser) {
+        resumeExistingResearch(resId);
+      }
+    }
+
+    async function resumeExistingResearch(resId) {
+      try {
+        const research = await DatabaseService.getResearch(currentUser.uid, resId);
+        if (research) {
+          activeResearchId = resId;
+          switchToLiveWorkspace(research);
+          if (research.status === 'completed') {
+            document.getElementById('btn-view-final-report').href = `report.html?id=${resId}`;
+            document.getElementById('btn-view-final-report').style.display = 'inline-flex';
+          }
+        }
+      } catch (err) {
+        console.warn('Could not load session:', err);
+      }
+    }
+
+    async function handleFormSubmit(e) {
+      e.preventDefault();
+      const topic = document.getElementById('input-topic').value.trim();
+      const description = document.getElementById('input-description').value.trim();
+      const depth = document.querySelector('input[name="research-depth"]:checked')?.value || 'Standard Research';
+      const language = document.getElementById('select-language').value;
+      const format = document.getElementById('select-report-format').value;
+      const instructions = document.getElementById('input-instructions').value.trim();
+      const targetWordCount = parseInt(document.querySelector('input[name="target-words"]:checked')?.value || '1500', 10);
+      const humanize = document.getElementById('check-humanize')?.checked ?? true;
+      const humanizeStyle = document.getElementById('select-humanize-style')?.value || 'natural_academic';
+
+      if (!topic) {
+        showToast('Please specify a research topic.', 'warning');
+        return;
+      }
+
+      const geminiKey = keyStore.getKey('gemini');
+      if (!geminiKey) {
+        showToast('Gemini API key is required. Please set it in API Settings.', 'warning');
+        document.getElementById('modal-api-settings').classList.add('open');
+        return;
+      }
+
+      const researchId = generateId('rx');
+      activeResearchId = researchId;
+
+      switchToLiveWorkspace({ topic, depth, language, targetWordCount, humanize, humanizeStyle });
+
+      try {
+        await engine.start({
+          researchId,
+          userUid: currentUser.uid,
+          apiKey: geminiKey,
+          model: keyStore.getModel(),
+          tavilyKey: keyStore.getKey('tavily'),
+          jinaKey: keyStore.getKey('jina'),
+          topic,
+          description,
+          depth,
+          language,
+          format,
+          targetWordCount,
+          humanize,
+          humanizeStyle,
+          instructions
+        });
+      } catch (err) {
+        console.error('Execution failure:', err);
+      }
+    }
+
+    function switchToLiveWorkspace(data) {
+      document.getElementById('view-setup-form').style.display = 'none';
+      const liveWorkspace = document.getElementById('view-live-workspace');
+      liveWorkspace.style.display = 'flex';
+
+      document.getElementById('live-topic-display').textContent = data.topic;
+      const wordText = data.targetWordCount ? `${data.targetWordCount} words` : '';
+      const humanizeText = data.humanize ? 'Humanized Voice' : 'Standard Voice';
+      document.getElementById('live-meta-depth').textContent = `${data.depth || 'Standard'}${wordText ? ' • ' + wordText : ''} • ${humanizeText}`;
+      document.getElementById('live-meta-lang').textContent = data.language || 'English';
+      document.getElementById('page-title-heading').textContent = 'Live Agent Workspace';
+    }
+
+    function highlightStageStep(progress) {
+      const stepIndex = Math.min(7, Math.max(1, Math.ceil(progress / 14.5)));
+      for (let i = 1; i <= 7; i++) {
+        const stepEl = document.getElementById(`stage-step-${i}`);
+        if (!stepEl) continue;
+        stepEl.classList.remove('active', 'completed');
+        if (i < stepIndex) {
+          stepEl.classList.add('completed');
+        } else if (i === stepIndex) {
+          stepEl.classList.add('active');
+        }
+      }
+    }
+
+    function renderAgentCards(agents) {
+      const container = document.getElementById('agent-cards-container');
+      if (!container) return;
+
+      container.innerHTML = agents.map(agent => {
+        const isRunning = agent.status !== 'waiting' && agent.status !== 'completed' && agent.status !== 'failed';
+        const cardClass = isRunning ? 'agent-card running' : agent.status === 'completed' ? 'agent-card completed' : agent.status === 'failed' ? 'agent-card failed' : 'agent-card';
+
+        const statusBadgeClass = agent.status === 'completed' ? 'badge-success'
+          : isRunning ? 'badge-active'
+          : agent.status === 'failed' ? 'badge-error'
+          : 'badge-idle';
+
+        const pulseClass = isRunning ? 'pulse' : '';
+        const timerText = agent.durationMs ? formatDuration(agent.durationMs) : agent.startTime ? formatDuration(Date.now() - agent.startTime) : '0s';
+
+        const outputBtn = agent.output ? `
+          <button class="btn btn-secondary btn-sm btn-inspect-agent" data-agent-id="${agent.id}">
+            Inspect Output
+          </button>
+        ` : '';
+
+        return `
+          <div class="${cardClass}" id="card-agent-${agent.id}">
+            <div class="agent-header">
+              <div class="agent-identity">
+                <div class="agent-avatar"><i data-lucide="${agent.icon}"></i></div>
+                <div class="agent-title-box">
+                  <div class="agent-name">${escapeHtml(agent.name)}</div>
+                  <div class="agent-role">${escapeHtml(agent.role)}</div>
+                </div>
+              </div>
+              <span class="badge ${statusBadgeClass}">
+                <span class="status-dot ${pulseClass}"></span>
+                ${escapeHtml(agent.status)}
+              </span>
+            </div>
+
+            <div class="agent-task-box">
+              <span>${escapeHtml(agent.currentTask)}</span>
+            </div>
+
+            <div class="agent-footer">
+              <div class="font-mono text-xs">
+                <span>Time: ${timerText}</span> &bull; 
+                <span>Tasks: ${agent.completedTasks}</span>
+              </div>
+              <div class="agent-actions">
+                ${outputBtn}
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      App.renderIcons();
+
+      // Bind inspect output buttons
+      document.querySelectorAll('.btn-inspect-agent').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-agent-id');
+          const agent = agentManager.getAgent(id);
+          if (agent && agent.output) {
+            document.getElementById('output-modal-title').textContent = `${agent.name} Output JSON`;
+            document.getElementById('output-modal-json').textContent = JSON.stringify(agent.output, null, 2);
+            document.getElementById('modal-agent-output').classList.add('open');
+          }
+        });
+      });
+    }
+
+    function renderSourceItem(source) {
+      const container = document.getElementById('sources-stream-list');
+      const badge = document.getElementById('source-count-badge');
+      if (!container) return;
+
+      // Remove placeholder empty state if present
+      const empty = container.querySelector('.empty-state');
+      if (empty) empty.remove();
+
+      const item = document.createElement('div');
+      item.className = 'source-item';
+      item.innerHTML = `
+        <div class="source-title-row">
+          <a href="${source.url}" target="_blank" rel="noopener noreferrer" class="source-title">
+            ${escapeHtml(source.title)}
+          </a>
+          <span class="badge badge-purple" style="font-size:0.65rem;">${escapeHtml(source.credibilityBadge)}</span>
+        </div>
+        <div class="source-domain">${escapeHtml(source.domain)}</div>
+        <div class="source-snippet">${escapeHtml(source.supporting_excerpt || 'Direct web citation.')}</div>
+      `;
+      container.prepend(item);
+
+      if (badge) {
+        const count = container.querySelectorAll('.source-item').length;
+        badge.textContent = count;
+      }
+    }
+
+    function appendLogEntry(entry) {
+      const container = document.getElementById('logs-stream-container');
+      if (!container) return;
+
+      const timeStr = new Date(entry.timestamp).toLocaleTimeString();
+      const div = document.createElement('div');
+      div.className = 'log-entry';
+      div.innerHTML = `
+        <span class="log-time">[${timeStr}]</span>
+        <span class="log-agent">&lt;${entry.agentId}&gt;</span>
+        <span class="log-msg ${entry.type}">${escapeHtml(entry.message)}</span>
+      `;
+      container.appendChild(div);
+      container.scrollTop = container.scrollHeight;
+    }
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResearchX — Autonomous Multi-Agent AI Research Platform</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Firebase SDK v8.10.0 -->
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+  <style>
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, #FFFFFF 0%, #F8F9FA 100%);
+      padding: 1.5rem;
+    }
+    .auth-wrapper {
+      max-width: 440px;
+      width: 100%;
+    }
+    .auth-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 2.25rem;
+      box-shadow: var(--shadow-md);
+    }
+    .auth-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-weight: 700;
+      font-size: 1.35rem;
+      margin-bottom: 0.5rem;
+      color: var(--accent-primary);
+    }
+    .auth-tagline {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-bottom: 1.75rem;
+      line-height: 1.45;
+    }
+    .auth-tabs {
+      display: flex;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 1.5rem;
+    }
+    .auth-tab-btn {
+      flex: 1;
+      padding: 0.65rem 0;
+      text-align: center;
+      font-weight: 500;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    .auth-tab-btn.active {
+      color: var(--text-primary);
+      border-bottom-color: var(--accent-primary);
+      font-weight: 600;
+    }
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      margin: 1.25rem 0;
+      color: var(--text-tertiary);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-subtle);
+    }
+    .auth-divider span {
+      padding: 0 0.75rem;
+    }
+  </style>
+</head>
+<body class="auth-page">
+
+  <div class="auth-wrapper">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="brand-icon-box">RX</div>
+        <span>ResearchX</span>
+        <span class="brand-tag">Academic</span>
+      </div>
+      <p class="auth-tagline">Autonomous multi-agent research intelligence for scientific, technical, and academic inquiry.</p>
+
+      <!-- Auth Switcher Tabs -->
+      <div class="auth-tabs">
+        <div class="auth-tab-btn active" id="tab-login">Sign In</div>
+        <div class="auth-tab-btn" id="tab-register">Create Account</div>
+        <div class="auth-tab-btn" id="tab-forgot">Reset</div>
+      </div>
+
+      <!-- Google Sign In Button -->
+      <button class="btn btn-secondary" id="btn-google-auth" style="width: 100%; margin-bottom: 0.65rem;">
+        <svg width="18" height="18" viewBox="0 0 24 24">
+          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <!-- Instant Guest / Demo Button -->
+      <button class="btn btn-subtle" id="btn-guest-auth" style="width: 100%; margin-bottom: 1rem; border: 1px dashed var(--border-default); font-size: 0.825rem;">
+        <i data-lucide="user-check"></i> Instant Guest / Demo Access
+      </button>
+
+      <div class="auth-divider"><span>or with email</span></div>
+
+      <!-- Login Form -->
+      <form id="form-login">
+        <div class="form-group">
+          <label class="form-label" for="login-email">Email Address</label>
+          <input type="email" id="login-email" required placeholder="researcher@university.edu">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="login-password">Password</label>
+          <input type="password" id="login-password" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn btn-primary" id="btn-submit-login" style="width: 100%; margin-top: 0.5rem;">
+          Sign In
+        </button>
+      </form>
+
+      <!-- Register Form -->
+      <form id="form-register" style="display: none;">
+        <div class="form-group">
+          <label class="form-label" for="reg-name">Full Name</label>
+          <input type="text" id="reg-name" required placeholder="Dr. Jane Doe">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-email">Email Address</label>
+          <input type="email" id="reg-email" required placeholder="researcher@university.edu">
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="reg-password">Password (min 6 chars)</label>
+          <input type="password" id="reg-password" minlength="6" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn btn-primary" id="btn-submit-reg" style="width: 100%; margin-top: 0.5rem;">
+          Create Account
+        </button>
+      </form>
+
+      <!-- Forgot Password Form -->
+      <form id="form-forgot" style="display: none;">
+        <div class="form-group">
+          <label class="form-label" for="forgot-email">Email Address</label>
+          <input type="email" id="forgot-email" required placeholder="researcher@university.edu">
+        </div>
+        <p class="form-hint" style="margin-bottom: 1rem;">We'll dispatch a secure reset link to your email.</p>
+        <button type="submit" class="btn btn-primary" id="btn-submit-forgot" style="width: 100%;">
+          Send Reset Link
+        </button>
+      </form>
+
+    </div>
+
+    <!-- Security Note -->
+    <div style="text-align: center; margin-top: 1.5rem; font-size: 0.775rem; color: var(--text-muted);">
+      Secured with Firebase Authentication & Client-side API Key Privacy.
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script type="module">
+    import { AuthService } from './assets/js/auth.js';
+    import { showToast } from './assets/js/utils/helpers.js';
+
+    // Auto-redirect if already signed in
+    AuthService.onAuthStateChanged(user => {
+      if (user) {
+        window.location.href = 'dashboard.html';
+      }
+    });
+
+    // Tab Switching
+    const tabLogin = document.getElementById('tab-login');
+    const tabRegister = document.getElementById('tab-register');
+    const tabForgot = document.getElementById('tab-forgot');
+    const formLogin = document.getElementById('form-login');
+    const formRegister = document.getElementById('form-register');
+    const formForgot = document.getElementById('form-forgot');
+
+    function switchTab(activeTab, showForm) {
+      [tabLogin, tabRegister, tabForgot].forEach(t => t.classList.remove('active'));
+      [formLogin, formRegister, formForgot].forEach(f => f.style.display = 'none');
+      activeTab.classList.add('active');
+      showForm.style.display = 'block';
+    }
+
+    tabLogin.addEventListener('click', () => switchTab(tabLogin, formLogin));
+    tabRegister.addEventListener('click', () => switchTab(tabRegister, formRegister));
+    tabForgot.addEventListener('click', () => switchTab(tabForgot, formForgot));
+
+    // Handle Login
+    formLogin.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value.trim();
+      const password = document.getElementById('login-password').value;
+      const btn = document.getElementById('btn-submit-login');
+
+      try {
+        btn.disabled = true;
+        btn.textContent = 'Authenticating...';
+        await AuthService.login(email, password);
+        showToast('Authentication successful. Redirecting...', 'success');
+        setTimeout(() => window.location.href = 'dashboard.html', 500);
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Sign In';
+        showToast(err.message, 'error');
+      }
+    });
+
+    // Handle Register
+    formRegister.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('reg-name').value.trim();
+      const email = document.getElementById('reg-email').value.trim();
+      const password = document.getElementById('reg-password').value;
+      const btn = document.getElementById('btn-submit-reg');
+
+      try {
+        btn.disabled = true;
+        btn.textContent = 'Creating Account...';
+        await AuthService.register(name, email, password);
+        showToast('Account created! Welcome to ResearchX.', 'success');
+        setTimeout(() => window.location.href = 'dashboard.html', 500);
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Create Account';
+        showToast(err.message, 'error');
+      }
+    });
+
+    // Handle Forgot Password
+    formForgot.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('forgot-email').value.trim();
+      const btn = document.getElementById('btn-submit-forgot');
+
+      try {
+        btn.disabled = true;
+        btn.textContent = 'Sending...';
+        await AuthService.sendPasswordReset(email);
+        showToast('Password reset email sent. Check your inbox.', 'success');
+        switchTab(tabLogin, formLogin);
+      } catch (err) {
+        btn.disabled = false;
+        btn.textContent = 'Send Reset Link';
+        showToast(err.message, 'error');
+      }
+    });
+
+    // Handle Google Sign In
+    document.getElementById('btn-google-auth').addEventListener('click', async () => {
+      try {
+        await AuthService.signInWithGoogle();
+        showToast('Signed in with Google. Redirecting...', 'success');
+        setTimeout(() => window.location.href = 'dashboard.html', 500);
+      } catch (err) {
+        showToast(err.message, 'error');
+      }
+    });
+
+    // Handle Guest / Demo Sign In
+    const guestBtn = document.getElementById('btn-guest-auth');
+    if (guestBtn) {
+      guestBtn.addEventListener('click', async () => {
+        try {
+          guestBtn.disabled = true;
+          guestBtn.textContent = 'Connecting as Guest...';
+          await AuthService.signInAsGuest();
+          showToast('Signed in as Guest. Redirecting...', 'success');
+          setTimeout(() => window.location.href = 'dashboard.html', 500);
+        } catch (err) {
+          guestBtn.disabled = false;
+          guestBtn.innerHTML = '<i data-lucide="user-check"></i> Instant Guest / Demo Access';
+          if (window.lucide) lucide.createIcons();
+          showToast(err.message, 'error');
+        }
+      });
+    }
+
+    if (window.lucide) lucide.createIcons();
+  </script>
+</body>
+</html>
+
